@@ -15,21 +15,17 @@ abstract public class BaseArtifact implements Artifact {
 	
 	@Override
 	public InputStream getPom() throws IOException {
-		if (getPackaging().equalsIgnoreCase("pom"))
+		if (getPackaging().equalsIgnoreCase("pom")) {
 			return getContent();
+		}
 		else {
 			InputStream input = getContent();
 			try {
 				ZipInputStream zip = new ZipInputStream(input);
-				try {
-					ZipEntry entry;
-					while((entry = zip.getNextEntry()) != null) {
-						if (entry.getName().endsWith("/pom.xml"))
-							return zip;
-					}
-				}
-				finally {
-					zip.close();
+				ZipEntry entry;
+				while((entry = zip.getNextEntry()) != null) {
+					if (entry.getName().endsWith("/pom.xml"))
+						return zip;
 				}
 				// if no pom.xml was found, generate it
 				return new ByteArrayInputStream(generatePom().getBytes("UTF-8"));
