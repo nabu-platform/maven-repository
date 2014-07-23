@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -21,6 +22,20 @@ abstract public class BaseRepository implements Repository {
 	public static final String PROPERTY_MODEL_VERSION = "be.nabu.mvn.repo.modelVersion";
 	
 	abstract protected List<? extends Artifact> getArtifacts();
+	
+	private List<String> domains = new ArrayList<String>();
+	
+	/**
+	 * Allows you to format the resulting file name using variables:
+	 * - $groupId
+	 * - $artifactId
+	 * - $version
+	 * - $extension
+	 * - $domain ('internal' or 'external')
+	 * - $type ('snapshots' or 'releases')
+	 * - $exploded: the groupId but exploded
+	 */
+	private String fileNameFormat = "$artifactId-$version.$extension";
 	
 	@Override
 	public InputStream getMetaData(String groupId, String artifactId) throws IOException {
@@ -54,6 +69,22 @@ abstract public class BaseRepository implements Repository {
 		return new ByteArrayInputStream(xml.getBytes("UTF-8"));
 	}
 
+	public SortedSet<Artifact> getInternalArtifacts() throws IOException {
+		SortedSet<Artifact> internal = new TreeSet<Artifact>(); 
+		for (String groupId : getGroups()) {
+			if (isInternal(groupId)) {
+				for (String artifactId : getArtifacts(groupId)) {
+					List<String> versions = new ArrayList<String>(getVersions(groupId, artifactId));
+					Artifact artifact = getArtifact(groupId, artifactId, versions.get(versions.size() - 1), false);
+					if (artifact != null) {
+						internal.add(artifact);
+					}
+				}
+			}
+		}
+		return internal;
+	}
+	
 	@Override
 	public InputStream getMetaData(Artifact artifact) throws IOException {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -98,8 +129,9 @@ abstract public class BaseRepository implements Repository {
 	@Override
 	public SortedSet<String> getGroups() throws IOException {
 		SortedSet<String> groups = new TreeSet<String>();
-		for (Artifact artifact : getArtifacts())
+		for (Artifact artifact : getArtifacts()) {
 			groups.add(artifact.getGroupId());
+		}
 		return groups;
 	}
 
@@ -107,8 +139,9 @@ abstract public class BaseRepository implements Repository {
 	public SortedSet<String> getArtifacts(String groupId) throws IOException {
 		SortedSet<String> artifacts = new TreeSet<String>();
 		for (Artifact artifact : getArtifacts()) {
-			if (artifact.getGroupId().equals(groupId))
+			if (artifact.getGroupId().equals(groupId)) {
 				artifacts.add(artifact.getArtifactId());
+			}
 		}
 		return artifacts;
 	}
@@ -117,8 +150,9 @@ abstract public class BaseRepository implements Repository {
 	public SortedSet<String> getVersions(String groupId, String artifactId) throws IOException {
 		SortedSet<String> versions = new TreeSet<String>();
 		for (Artifact artifact : getArtifacts()) {
-			if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId))
+			if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
 				versions.add(artifact.getVersion());
+			}
 		}
 		return versions;
 	}
@@ -126,10 +160,44 @@ abstract public class BaseRepository implements Repository {
 	@Override
 	public Artifact getArtifact(String groupId, String artifactId, String version, boolean isTest) {
 		for (Artifact artifact : getArtifacts()) {
-			if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId) && artifact.getVersion().equals(version) && artifact.isTest() == isTest)
+			if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId) && artifact.getVersion().equals(version) && artifact.isTest() == isTest) {
 				return artifact;
+			}
 		}
 		return null;
 	}
 
+	public List<String> getDomains() {
+		return domains;
+	}
+	
+	protected boolean isInternal(String groupId) {
+		for (String domain : domains) {
+			if (groupId.equals(domain) || groupId.startsWith(domain + "."))
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean isInternal(Artifact artifact) {
+		return isInternal(artifact.getGroupId());
+	}
+	
+	protected String formatFileName(String groupId, String artifactId, String version, String packaging) {
+		return fileNameFormat
+			.replaceAll("\\$domain", isInternal(groupId) ? "internal" : "external")
+			.replaceAll("\\$type", version.endsWith("-SNAPSHOT") ? "snapshots" : "releases")
+			.replaceAll("\\$groupId", groupId)
+			.replaceAll("\\$exploded", groupId.replaceAll("\\.", "/"))
+			.replaceAll("\\$artifactId", artifactId)
+			.replaceAll("\\$version", version)
+			.replaceAll("\\$extension", packaging);
+	}
+	
+	public String getFileNameFormat() {
+		return fileNameFormat;
+	}
+	public void setFileNameFormat(String format) {
+		this.fileNameFormat = format;
+	}
 }
