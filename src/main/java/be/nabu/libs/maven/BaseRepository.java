@@ -11,9 +11,9 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import be.nabu.libs.maven.api.Artifact;
-import be.nabu.libs.maven.api.Repository;
+import be.nabu.libs.maven.api.DomainRepository;
 
-abstract public class BaseRepository implements Repository {
+abstract public class BaseRepository implements DomainRepository {
 
 	/**
 	 * Set it to "1.0.0" (default) or "1.1.0"
@@ -69,6 +69,7 @@ abstract public class BaseRepository implements Repository {
 		return new ByteArrayInputStream(xml.getBytes("UTF-8"));
 	}
 
+	@Override
 	public SortedSet<Artifact> getInternalArtifacts() throws IOException {
 		SortedSet<Artifact> internal = new TreeSet<Artifact>(); 
 		for (String groupId : getGroups()) {
@@ -167,6 +168,7 @@ abstract public class BaseRepository implements Repository {
 		return null;
 	}
 
+	@Override
 	public List<String> getDomains() {
 		return domains;
 	}
@@ -179,6 +181,7 @@ abstract public class BaseRepository implements Repository {
 		return false;
 	}
 	
+	@Override
 	public boolean isInternal(Artifact artifact) {
 		return isInternal(artifact.getGroupId());
 	}
