@@ -2,10 +2,10 @@ package be.nabu.libs.maven.api;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.SortedSet;
+import java.util.Set;
 
 public interface DomainRepository extends Repository {
 	public List<String> getDomains();
 	public boolean isInternal(Artifact artifact);
-	public SortedSet<Artifact> getInternalArtifacts() throws IOException;
+	public Set<Artifact> getInternalArtifacts() throws IOException;
 }

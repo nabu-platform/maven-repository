@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -70,8 +72,8 @@ abstract public class BaseRepository implements DomainRepository {
 	}
 
 	@Override
-	public SortedSet<Artifact> getInternalArtifacts() throws IOException {
-		SortedSet<Artifact> internal = new TreeSet<Artifact>(); 
+	public Set<Artifact> getInternalArtifacts() throws IOException {
+		Set<Artifact> internal = new HashSet<Artifact>(); 
 		for (String groupId : getGroups()) {
 			if (isInternal(groupId)) {
 				for (String artifactId : getArtifacts(groupId)) {
