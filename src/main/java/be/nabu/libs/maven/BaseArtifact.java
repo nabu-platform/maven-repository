@@ -11,7 +11,7 @@ import be.nabu.libs.maven.api.Artifact;
 
 abstract public class BaseArtifact implements Artifact {
 
-	private String groupId, artifactId, version;
+	private String groupId, artifactId, version, packaging;
 	
 	@Override
 	public InputStream getPom() throws IOException {
@@ -68,6 +68,7 @@ abstract public class BaseArtifact implements Artifact {
 			setVersion(properties.getProperty("version"));
 			setArtifactId(properties.getProperty("artifactId"));
 			setGroupId(properties.getProperty("groupId"));
+			packaging = properties.getProperty("packaging");
 		}
 		else {
 			String groupId = getArtifactName().replaceAll("^([^-]+).*", "$1");
@@ -110,9 +111,16 @@ abstract public class BaseArtifact implements Artifact {
 		this.version = version;
 	}
 
+	private String getExtension() {
+		return getArtifactName().replaceAll(".*?([^.]+)$", "$1");
+	}
+	
 	@Override
 	public String getPackaging() {
-		return getArtifactName().replaceAll(".*?([^.]+)$", "$1");
+		if (packaging == null) {
+			packaging = getExtension().toLowerCase();
+		}
+		return packaging;
 	}
 
 	@Override

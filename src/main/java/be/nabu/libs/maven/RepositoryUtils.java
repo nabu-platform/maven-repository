@@ -84,6 +84,9 @@ public class RepositoryUtils {
 			properties.put("groupId", content.replaceAll("(?s).*?<groupId>([^<]+).*", "$1"));
 			properties.put("artifactId", content.replaceAll("(?s).*?<artifactId>([^<]+).*", "$1"));
 			properties.put("version", content.replaceAll("(?s).*?<version>([^<]+).*", "$1"));
+			if (content.contains("<packaging>")) {
+				properties.put("packaging", content.replaceAll("(?s).*?<packaging>([^<]+).*", "$1"));
+			}
 		}
 		finally {
 			input.close();
