@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import be.nabu.libs.maven.api.Artifact;
@@ -194,9 +195,9 @@ abstract public class BaseRepository implements DomainRepository {
 			.replaceAll("\\$type", version.endsWith("-SNAPSHOT") ? "snapshots" : "releases")
 			.replaceAll("\\$groupId", groupId)
 			.replaceAll("\\$exploded", groupId.replaceAll("\\.", "/"))
-			.replaceAll("\\$artifactId", artifactId)
-			.replaceAll("\\$version", version)
-			.replaceAll("\\$extension", packaging);
+			.replaceAll("\\$artifactId", Matcher.quoteReplacement(artifactId))
+			.replaceAll("\\$version", Matcher.quoteReplacement(version))
+			.replaceAll("\\$extension", Matcher.quoteReplacement(packaging));
 	}
 	
 	public String getFileNameFormat() {
