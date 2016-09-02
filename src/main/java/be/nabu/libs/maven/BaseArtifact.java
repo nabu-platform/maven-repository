@@ -72,12 +72,13 @@ abstract public class BaseArtifact implements Artifact {
 		}
 		else {
 			String groupId = getArtifactName().replaceAll("^([^-]+).*", "$1");
-			setGroupId(groupId.equals(getArtifactName()) ? "com.example" : groupId);
-			String version = getArtifactName().replaceAll(".*?-([^-]+)\\..+$", "$1");
-			setVersion(version.equals(getArtifactName()) ? "1.0" : version);
-			String name = getArtifactName().replaceAll("^(.+)\\..+", "$1")
-				.replaceAll("^" + getGroupId() + "-", "")
-				.replaceAll("-" + getVersion(), "");
+			setGroupId(groupId.equals(getArtifactName()) ? "com.example" : groupId.replace("__", "-"));
+			String version = getArtifactName().replaceAll(".*?-([^-]+)\\.[^.]+$", "$1");
+			// the replacement makes sure we can still add "-" to versions in the file name
+			setVersion(version.equals(getArtifactName()) ? "1.0" : version.replace("__", "-"));
+			String name = getArtifactName().replaceAll("^(.+)\\.[^.]+$", "$1")
+				.replaceAll("^" + groupId + "-", "")
+				.replaceAll("-" + version, "");
 			setArtifactId(name);
 		}
 	}
