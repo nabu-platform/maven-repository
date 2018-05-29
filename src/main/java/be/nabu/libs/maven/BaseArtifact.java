@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.regex.Matcher;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -76,9 +77,13 @@ abstract public class BaseArtifact implements Artifact {
 			String version = getArtifactName().replaceAll(".*?-([^-]+)\\.[^.]+$", "$1");
 			// the replacement makes sure we can still add "-" to versions in the file name
 			setVersion(version.equals(getArtifactName()) ? "1.0" : version.replace("__", "-"));
+			// dirty hack for a artifact with name common-${project.version}.jar
+			if (version.startsWith("${")) {
+				version = "1.0";
+			}
 			String name = getArtifactName().replaceAll("^(.+)\\.[^.]+$", "$1")
-				.replaceAll("^" + groupId + "-", "")
-				.replaceAll("-" + version, "");
+				.replaceAll("^" + Matcher.quoteReplacement(groupId) + "-", "")
+				.replaceAll("-" + Matcher.quoteReplacement(version), "");
 			setArtifactId(name);
 		}
 	}
